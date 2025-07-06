@@ -1,0 +1,682 @@
+/* 기본 HTML 요소 스타일 */
+body {
+    font-family: "Inter", sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+/* 컨테이너 스타일 */
+.container {
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    text-align: center;
+    max-width: 700px;
+    width: 100%;
+}
+/* 로딩 스피너 컨테이너 스타일 */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 20px auto;
+    min-height: 60px;
+}
+/* 로딩 스피너 스타일 */
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+/* 스피너 애니메이션 키프레임 */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+/* 이미지 스타일 */
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin-top: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+/* 프롬프트 입력창 스타일 */
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 300px;
+}
+/* API 키 입력창 스타일 */
+input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+/* 버튼 스타일 */
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+}
+button:hover {
+    background-color: #45a049;
+}
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+/* 파일 입력 래퍼 스타일 */
+.file-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.file-input-wrapper label {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.file-input-wrapper input[type="file"] {
+    display: none;
+}
+/* 이미지 미리보기 스타일 */
+.image-preview {
+    margin-top: 15px;
+    max-width: 200px;
+    max-height: 200px;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: none;
+}
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    margin-top: 0;
+    box-shadow: none;
+}
+/* 이미지 설명 로딩 텍스트 스타일 */
+.description-loading {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #555;
+}
+/* 캐릭터 정보 섹션 스타일 */
+.character-info-section {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    text-align: left;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+}
+.character-info-section h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+}
+.character-info-section p {
+    white-space: pre-wrap;
+    color: #555;
+    line-height: 1.6;
+}
+/* 캐릭터 정보 로딩 텍스트 스타일 */
+.character-info-loading {
+    margin: 20px auto;
+    text-align: center;
+    color: #555;
+}
+/* API 키 입력 래퍼 스타일 */
+.api-key-input-wrapper {
+    margin-bottom: 20px;
+    text-align: left;
+    width: 100%;
+}
+.api-key-input-wrapper label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+.api-key-input-wrapper a {
+    color: #007bff;
+    text-decoration: underline;
+    font-size: 0.9rem;
+    margin-left: 5px;
+    cursor: pointer;
+}
+.api-key-input-wrapper a:hover {
+    color: #0056b3;
+}
+/* API 키 토글 버튼 스타일 */
+.api-key-toggle-button {
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+.api-key-toggle-button:hover {
+    background-color: #5a6268;
+}
+/* API 키 입력 필드와 토글 버튼을 위한 Flex 컨테이너 */
+.api-key-input-flex {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+.api-key-input-flex input {
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+/* 모달 기본 스타일 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+}
+/* 모달 내용 스타일 */
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+    text-align: left;
+}
+/* 모달 닫기 버튼 스타일 */
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    cursor: pointer;
+}
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+.modal-content h3 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+}
+.modal-content ol {
+    list-style-type: decimal;
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+.modal-content li {
+    margin-bottom: 10px;
+    color: #555;
+    line-height: 1.5;
+}
+.modal-content a {
+    color: #007bff;
+    text-decoration: underline;
+}
+.modal-content a:hover {
+    color: #0056b3;
+}
+/* 유틸리티 클래스 */
+.hidden {
+    display: none !important;
+}
+/* 추가된 버튼 스타일 */
+.action-button {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    margin: 5px;
+}
+.action-button:hover {
+    background-color: #218838;
+}
+/* 가이드라인 섹션 스타일 */
+.guidelines-section {
+    background-color: #e0f2f7;
+    border-left: 5px solid #00acc1;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+    text-align: left;
+}
+.guidelines-section h2 {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #00798c;
+    margin-bottom: 15px;
+    text-align: center;
+}
+.guidelines-section h3 {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #00798c;
+    margin-top: 15px;
+    margin-bottom: 8px;
+}
+.guidelines-section ul {
+    list-style-type: disc;
+    margin-left: 20px;
+    color: #334e68;
+    line-height: 1.5;
+}
+.guidelines-section li {
+    margin-bottom: 5px;
+}
+/* 이미지 컨테이너 중앙 정렬 */
+#characterImageContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 20px;
+}
+#characterImageContainer img {
+    margin-top: 0;
+    box-shadow: none;
+}
+
+/* 커스텀 확인 팝업 스타일 */
+.confirm-modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+}
+.confirm-modal-content {
+    background-color: #fefefe;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+}
+.confirm-modal-content p {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    color: #333;
+}
+.confirm-modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+.confirm-modal-buttons button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+    margin-top: 0;
+    box-shadow: none;
+}
+.confirm-modal-buttons .confirm-ok {
+    background-color: #28a745;
+    color: white;
+}
+.confirm-modal-buttons .confirm-ok:hover {
+    background-color: #218838;
+}
+.confirm-modal-buttons .confirm-cancel {
+    background-color: #dc3545;
+    color: white;
+}
+.confirm-modal-buttons .confirm-cancel:hover {
+    background-color: #c82333;
+}
+
+/* 에러 메시지 스타일 강화 */
+#errorMessage {
+    font-size: 1.1rem;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease-in-out;
+    display: block;
+    margin-top: 15px;
+}
+/* 에러 메시지 하이라이트 클래스 */
+.error-highlight {
+    background-color: #ffe0e0;
+}
+
+/* 성공 메시지 스타일 */
+#successMessage {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #28a745;
+    padding: 8px 15px;
+    border-radius: 8px;
+    background-color: #e6ffe6;
+    transition: opacity 0.5s ease-out;
+    display: block;
+    margin-top: 15px;
+}
+
+/* 토큰 카운트 표시 영역 */
+#tokenCountDisplay {
+    margin-top: -10px; /* textarea와의 간격 조절 */
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+    color: #666;
+    text-align: right; /* 오른쪽 정렬 */
+    min-height: 20px; /* 공간 확보 */
+    padding-right: 10px; /* 오른쪽 여백 */
+}
+
+
+/* 이미지 분석 결과 적용 방식 선택 모달 */
+#promptUpdateChoiceModal {
+    display: none;
+    position: fixed;
+    z-index: 1002;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+}
+#promptUpdateChoiceModal .modal-content {
+    background-color: #fefefe;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    max-width: 450px;
+    width: 90%;
+    text-align: center;
+    animation: fadeInScale 0.3s ease-out;
+}
+#promptUpdateChoiceModal .modal-content h3 {
+    font-size: 1.6rem;
+    color: #333;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+#promptUpdateChoiceModal .modal-content p {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 25px;
+}
+#promptUpdateChoiceModal .modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+#promptUpdateChoiceModal .modal-buttons button {
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+#promptUpdateChoiceModal .modal-buttons button:hover {
+    transform: translateY(-2px);
+}
+#promptUpdateChoiceModal .modal-buttons .btn-overwrite {
+    background-color: #dc3545;
+    color: white;
+}
+#promptUpdateChoiceModal .modal-buttons .btn-overwrite:hover {
+    background-color: #c82333;
+}
+#promptUpdateChoiceModal .modal-buttons .btn-append {
+    background-color: #007bff;
+    color: white;
+}
+#promptUpdateChoiceModal .modal-buttons .btn-append:hover {
+    background-color: #0056b3;
+}
+
+/* 등장 애니메이션 */
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* --- 신규 카드 UI 스타일 --- */
+
+.model-select-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.model-select-wrapper label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+}
+
+.card-selector-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
+
+.card-item {
+    background-color: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: relative;
+}
+
+.card-item:hover {
+    transform: translateY(-3px);
+    border-color: #007bff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-item.selected {
+    border-color: #007bff;
+    background-color: #e7f3ff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.model-card {
+    min-width: 180px;
+    flex-grow: 1;
+}
+
+.card-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #343a40;
+    margin-bottom: 5px;
+}
+
+.card-tag {
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 12px;
+    color: white;
+    margin-bottom: 8px;
+}
+
+.card-tag.recommended {
+    background-color: #28a745;
+}
+
+.card-tag.preview {
+    background-color: #fd7e14;
+}
+
+.card-tag.fast {
+    background-color: #17a2b8;
+}
+
+.card-description {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* 비율 선택 카드 스타일 */
+.aspect-ratio-card {
+    width: 80px;
+    height: 80px;
+}
+
+.ratio-icon {
+    border: 2px solid #adb5bd;
+    background-color: #f1f3f5;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.card-item.selected .ratio-icon {
+    border-color: #007bff;
+    background-color: #cce5ff;
+}
+
+.ratio-icon.square { width: 30px; height: 30px; }
+.ratio-icon.landscape { width: 32px; height: 18px; } /* 16:9 비율 */
+.ratio-icon.portrait { width: 18px; height: 32px; } /* 9:16 비율 */
+.ratio-icon.landscape-standard { width: 32px; height: 24px; } /* 4:3 비율 */
+.ratio-icon.portrait-standard { width: 24px; height: 32px; } /* 3:4 비율 */
+
+/* 비활성화 상태 스타일 */
+#aspectRatioContainer.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+#aspectRatioNotice {
+    color: #dc3545; /* 빨간색 계열로 강조 */
+    font-weight: 500;
+}
+
+/* 프롬프트 템플릿 버튼 스타일 */
+.prompt-template-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.prompt-template-btn {
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.prompt-template-btn:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.prompt-template-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
