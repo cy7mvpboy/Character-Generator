@@ -1,8 +1,8 @@
 // =================================================================
-// DOM Element References
+// DOM 요소 참조
 // =================================================================
 
-// --- Core Application Elements ---
+// --- 핵심 애플리케이션 요소 ---
 const apiKeyInput = document.getElementById('apiKeyInput');
 const apiKeyToggleVisibilityButton = document.getElementById('apiKeyToggleVisibilityButton');
 const promptInput = document.getElementById('promptInput');
@@ -12,33 +12,33 @@ const clearPromptButton = document.getElementById('clearPromptButton');
 const copyInfoButton = document.getElementById('copyInfoButton');
 const tokenCountDisplay = document.getElementById('tokenCountDisplay');
 
-// --- Loading and Message Elements ---
+// --- 로딩 및 메시지 요소 ---
 const loadingContainer = document.getElementById('loadingContainer');
 const loadingSpinner = document.getElementById('loadingSpinner');
 const loadingMessage = document.getElementById('loadingMessage');
 const errorMessage = document.getElementById('errorMessage');
 const successMessage = document.getElementById('successMessage');
 
-// --- Image Handling Elements ---
+// --- 이미지 처리 요소 ---
 const imageUpload = document.getElementById('imageUpload');
 const imagePreview = document.getElementById('imagePreview');
 const imagePreviewImg = imagePreview.querySelector('img');
 const descriptionLoading = document.getElementById('descriptionLoading');
 const characterImageContainer = document.getElementById('characterImageContainer');
 
-// --- Character Info Elements ---
+// --- 캐릭터 정보 요소 ---
 const characterInfoSection = document.getElementById('characterInfoSection');
 const characterInfoOutput = document.getElementById('characterInfoOutput');
 const characterInfoLoading = document.getElementById('characterInfoLoading');
 
-// --- UI Enhancement Elements ---
+// --- UI 개선 요소 ---
 const modelSelector = document.getElementById('modelSelector');
 const aspectRatioContainer = document.getElementById('aspectRatioContainer');
 const aspectRatioSelector = document.getElementById('aspectRatioSelector');
 const aspectRatioNotice = document.getElementById('aspectRatioNotice');
 const promptTemplateContainer = document.getElementById('promptTemplateContainer');
 
-// --- Modal Elements ---
+// --- 모달 요소 ---
 const apiKeyGuideLink = document.getElementById('showApiKeyGuide');
 const apiKeyGuideModal = document.getElementById('apiKeyGuideModal');
 const closeModalButton = apiKeyGuideModal.querySelector('.close-button');
@@ -51,27 +51,27 @@ const messageModalOkButton = document.getElementById('messageModalOkButton');
 
 
 // =================================================================
-// Global State and Variables
+// 전역 상태 및 변수
 // =================================================================
 
-let resolvePromptUpdateChoicePromise; // Stores the promise resolver for the prompt update choice modal.
-let resolveMessageModalPromise;      // Stores the promise resolver for the general message modal.
-let currentImageDescription = '';    // Holds the description generated from an uploaded image.
-let countTokensTimeout;              // Timeout ID for debouncing the token count API call.
+let resolvePromptUpdateChoicePromise; // 프롬프트 업데이트 선택 모달의 promise 리졸버를 저장합니다.
+let resolveMessageModalPromise;      // 일반 메시지 모달의 promise 리졸버를 저장합니다.
+let currentImageDescription = '';    // 업로드된 이미지에서 생성된 설명을 저장합니다.
+let countTokensTimeout;              // 토큰 수 계산 API 호출을 디바운싱하기 위한 타임아웃 ID입니다.
 
-// --- Default Selections ---
-let selectedModel = 'imagen-3.0-generate-002'; // Default image generation model.
-let selectedAspectRatio = '1:1';               // Default aspect ratio.
+// --- 기본 선택 항목 ---
+let selectedModel = 'imagen-3.0-generate-002'; // 기본 이미지 생성 모델입니다.
+let selectedAspectRatio = '1:1';               // 기본 이미지 비율입니다.
 
 
 // =================================================================
-// Utility and Helper Functions
+// 유틸리티 및 헬퍼 함수
 // =================================================================
 
 /**
- * Displays a general-purpose message modal and waits for user confirmation.
- * @param {string} message The message to display in the modal.
- * @returns {Promise<void>} A promise that resolves when the user clicks "OK".
+ * 범용 메시지 모달을 표시하고 사용자 확인을 기다립니다.
+ * @param {string} message - 모달에 표시할 메시지입니다.
+ * @returns {Promise<void>} 사용자가 "확인"을 클릭하면 리졸브되는 프로미스입니다.
  */
 function showMessageModal(message) {
     messageModalText.textContent = message;
@@ -82,9 +82,9 @@ function showMessageModal(message) {
 }
 
 /**
- * Displays a modal asking the user how to apply the new image description.
- * @param {string} description The image description text from the Vision API.
- * @returns {Promise<string>} A promise that resolves with the user's choice ('overwrite' or 'append').
+ * 새로운 이미지 설명을 어떻게 적용할지 묻는 모달을 표시합니다.
+ * @param {string} description - Vision API에서 받은 이미지 설명 텍스트입니다.
+ * @returns {Promise<string>} 사용자의 선택('overwrite' 또는 'append')으로 리졸브되는 프로미스입니다.
  */
 function showPromptUpdateChoiceModal(description) {
     currentImageDescription = description;
@@ -95,7 +95,7 @@ function showPromptUpdateChoiceModal(description) {
 }
 
 /**
- * Updates the visibility and type of the API key input field.
+ * API 키 입력 필드의 가시성과 타입을 업데이트합니다.
  */
 function updateApiKeyUI() {
     if (apiKeyInput.value.trim().length > 0) {
@@ -109,7 +109,7 @@ function updateApiKeyUI() {
 }
 
 /**
- * Toggles the visibility of the API key text.
+ * API 키 텍스트의 가시성을 토글합니다.
  */
 function toggleApiKeyVisibility() {
     if (apiKeyInput.type === 'password') {
@@ -122,21 +122,21 @@ function toggleApiKeyVisibility() {
 }
 
 /**
- * Escapes HTML special characters in a string to prevent XSS.
- * @param {string} text The string to escape.
- * @returns {string} The escaped, HTML-safe string.
+ * XSS를 방지하기 위해 문자열의 HTML 특수 문자를 이스케이프 처리합니다.
+ * @param {string} text - 이스케이프할 문자열입니다.
+ * @returns {string} 이스케이프 처리된 HTML 안전 문자열입니다.
  */
 function escapeHtml(text) {
     const map = {
         '&': '&amp;', '<': '&lt;', '>': '&gt;',
         '"': '&quot;', "'": '&#039;'
     };
-    return text.replace(/[&<>"]/g, (m) => map[m]);
+    return text.replace(/[&<>""]/g, (m) => map[m]);
 }
 
 /**
- * Displays an error message to the user.
- * @param {string} message The error message to display.
+ * 사용자에게 오류 메시지를 표시합니다.
+ * @param {string} message - 표시할 오류 메시지입니다.
  */
 function displayErrorMessage(message) {
     errorMessage.textContent = `⚠️ ${message}`;
@@ -151,8 +151,8 @@ function displayErrorMessage(message) {
 }
 
 /**
- * Displays a success message that fades out after a short duration.
- * @param {string} message The success message to display.
+ * 짧은 시간 후에 사라지는 성공 메시지를 표시합니다.
+ * @param {string} message - 표시할 성공 메시지입니다.
  */
 function displaySuccessMessage(message) {
     successMessage.textContent = `✅ ${message}`;
@@ -165,15 +165,15 @@ function displaySuccessMessage(message) {
 
 
 // =================================================================
-// API Communication Functions
+// API 통신 함수
 // =================================================================
 
 /**
- * Describes an image using the Gemini Vision API.
- * @param {string} base64ImageData The base64-encoded image data.
- * @param {string} apiKey The user's Gemini API key.
- * @param {string} promptText The text prompt to send with the image.
- * @returns {Promise<string>} A promise that resolves with the image description text.
+ * Gemini Vision API를 사용하여 이미지를 설명합니다.
+ * @param {string} base64ImageData - base64로 인코딩된 이미지 데이터입니다.
+ * @param {string} apiKey - 사용자의 Gemini API 키입니다.
+ * @param {string} promptText - 이미지와 함께 보낼 텍스트 프롬프트입니다.
+ * @returns {Promise<string>} 이미지 설명 텍스트로 리졸브되는 프로미스입니다.
  */
 async function describeImageWithGemini(base64ImageData, apiKey, promptText) {
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
@@ -195,12 +195,12 @@ async function describeImageWithGemini(base64ImageData, apiKey, promptText) {
     if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
         return result.candidates[0].content.parts[0].text;
     } else {
-        throw new Error("Invalid response structure from Gemini Vision API.");
+        throw new Error("Gemini Vision API로부터 잘못된 응답 구조를 받았습니다.");
     }
 }
 
 /**
- * Generates an image using the selected Gemini image generation model.
+ * 선택된 Gemini 이미지 생성 모델을 사용하여 이미지를 생성합니다.
  */
 async function generateImage() {
     const apiKey = apiKeyInput.value.trim();
@@ -215,7 +215,7 @@ async function generateImage() {
         return;
     }
 
-    // --- UI State: Start Loading ---
+    // --- UI 상태: 로딩 시작 ---
     generateImageButton.disabled = true;
     generateInfoButton.disabled = true;
     clearPromptButton.disabled = true;
@@ -232,7 +232,7 @@ async function generateImage() {
         let payload;
         let apiUrl;
 
-        // Configure API endpoint and payload based on the selected model
+        // 선택된 모델에 따라 API 엔드포인트와 페이로드를 구성합니다.
         if (selectedModel === "gemini-2.0-flash-preview-image-generation") {
             apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
             payload = {
@@ -254,18 +254,18 @@ async function generateImage() {
         });
 
         if (!response.ok) {
-            let errorDetails = `HTTP Error! Status: ${response.status}`;
+            let errorDetails = `HTTP 오류! 상태: ${response.status}`;
             try {
                 const errorResult = await response.json();
                 errorDetails = errorResult.error?.message || JSON.stringify(errorResult);
-            } catch (e) { /* Ignore if response is not JSON */ }
+            } catch (e) { /* 응답이 JSON이 아닌 경우 무시 */ }
             throw new Error(errorDetails);
         }
 
         const result = await response.json();
         let imageUrl = '';
 
-        // Extract image data from the response based on the model
+        // 모델에 따라 응답에서 이미지 데이터를 추출합니다.
         if (selectedModel === "gemini-2.0-flash-preview-image-generation") {
             const imagePart = result.candidates?.[0]?.content?.parts.find(part => part.inlineData);
             if (imagePart?.inlineData?.data) {
@@ -278,7 +278,7 @@ async function generateImage() {
         }
 
         if (imageUrl) {
-            // --- Display Generated Image and Download Button ---
+            // --- 생성된 이미지 및 다운로드 버튼 표시 ---
             const imgElement = document.createElement('img');
             imgElement.src = imageUrl;
             imgElement.alt = "생성된 캐릭터 이미지";
@@ -305,13 +305,13 @@ async function generateImage() {
             } else {
                 displayErrorMessage("이미지 생성 결과가 예상과 다릅니다. API 응답을 확인해 주세요.");
             }
-            console.error("Unexpected image generation response:", result);
+            console.error("예상치 못한 이미지 생성 응답:", result);
         }
     } catch (error) {
         displayErrorMessage(`이미지 생성 중 오류 발생: ${error.message}`);
-        console.error("Image generation error:", error);
+        console.error("이미지 생성 오류:", error);
     } finally {
-        // --- UI State: End Loading ---
+        // --- UI 상태: 로딩 종료 ---
         generateImageButton.disabled = false;
         generateInfoButton.disabled = false;
         clearPromptButton.disabled = false;
@@ -322,7 +322,7 @@ async function generateImage() {
 }
 
 /**
- * Generates character information (bio, traits) using the Gemini LLM.
+ * Gemini LLM을 사용하여 캐릭터 정보(소개, 특징)를 생성합니다.
  */
 async function generateCharacterInfo() {
     const apiKey = apiKeyInput.value.trim();
@@ -337,7 +337,7 @@ async function generateCharacterInfo() {
         return;
     }
 
-    // --- UI State: Start Loading ---
+    // --- UI 상태: 로딩 시작 ---
     generateImageButton.disabled = true;
     generateInfoButton.disabled = true;
     clearPromptButton.disabled = true;
@@ -363,7 +363,7 @@ async function generateCharacterInfo() {
         });
 
         if (!response.ok) {
-            let errorData = { message: `HTTP Error! Status: ${response.status}` };
+            let errorData = { message: `HTTP 오류! 상태: ${response.status}` };
             try {
                 const errorJson = await response.json();
                 errorData.message = errorJson.error?.message || JSON.stringify(errorJson);
@@ -388,13 +388,13 @@ async function generateCharacterInfo() {
             } else {
                 displayErrorMessage("캐릭터 정보 생성 결과가 예상과 다릅니다. API 응답을 확인해 주세요.");
             }
-            console.error("Unexpected character info response:", result);
+            console.error("예상치 못한 캐릭터 정보 응답:", result);
         }
     } catch (error) {
         displayErrorMessage(`오류 발생: ${error.message}`);
-        console.error("Character info generation error:", error);
+        console.error("캐릭터 정보 생성 오류:", error);
     } finally {
-        // --- UI State: End Loading ---
+        // --- UI 상태: 로딩 종료 ---
         generateImageButton.disabled = false;
         generateInfoButton.disabled = false;
         clearPromptButton.disabled = false;
@@ -405,8 +405,8 @@ async function generateCharacterInfo() {
 }
 
 /**
- * Counts the number of tokens in the current prompt using the Gemini API.
- * This function is debounced to avoid excessive API calls.
+ * Gemini API를 사용하여 현재 프롬프트의 토큰 수를 계산합니다.
+ * 이 함수는 과도한 API 호출을 피하기 위해 디바운스됩니다.
  */
 async function countPromptTokens() {
     if (countTokensTimeout) {
@@ -450,24 +450,24 @@ async function countPromptTokens() {
             } else {
                 tokenCountDisplay.textContent = '토큰 수 계산 실패';
                 tokenCountDisplay.style.color = '#dc3545';
-                console.error("Unexpected token count response:", result);
+                console.error("예상치 못한 토큰 수 응답:", result);
             }
         } catch (error) {
             tokenCountDisplay.textContent = '토큰 수 계산 오류';
             tokenCountDisplay.style.color = '#dc3545';
-            console.error("Token count error:", error);
+            console.error("토큰 수 계산 오류:", error);
         }
     }, 500);
 }
 
 
 // =================================================================
-// Event Handlers and Listeners
+// 이벤트 핸들러 및 리스너
 // =================================================================
 
 /**
- * Handles the 'change' event for the image upload input.
- * Reads the file, sends it to the Vision API, and updates the UI.
+ * 이미지 업로드 입력의 'change' 이벤트를 처리합니다.
+ * 파일을 읽고 Vision API로 전송한 후 UI를 업데이트합니다.
  */
 imageUpload.addEventListener('change', async (event) => {
     const file = event.target.files[0];
@@ -492,7 +492,7 @@ imageUpload.addEventListener('change', async (event) => {
         return;
     }
 
-    // --- UI State: Start Loading ---
+    // --- UI 상태: 로딩 시작 ---
     errorMessage.classList.add('hidden');
     successMessage.classList.add('hidden');
     tokenCountDisplay.classList.add('hidden');
@@ -514,10 +514,10 @@ imageUpload.addEventListener('change', async (event) => {
             await showPromptUpdateChoiceModal(imageDescription.trim());
             displaySuccessMessage("이미지 분석 완료!");
         } catch (error) {
-            displayErrorMessage("이미지 분석 중 오류가 발생했습니다. API 키가 올바른지 확인하거나 ��시 후 다시 시도해 주세요.");
-            console.error("Image analysis error:", error);
+            displayErrorMessage("이미지 분석 중 오류가 발생했습니다. API 키가 올바른지 확인하거나 잠시 후 다시 시도해 주세요.");
+            console.error("이미지 분석 오류:", error);
         } finally {
-            // --- UI State: End Loading ---
+            // --- UI 상태: 로딩 종료 ---
             descriptionLoading.classList.add('hidden');
             generateImageButton.disabled = false;
             generateInfoButton.disabled = false;
@@ -529,12 +529,12 @@ imageUpload.addEventListener('change', async (event) => {
 });
 
 /**
- * Copies the generated character information to the clipboard.
- * Provides feedback to the user on success or failure.
+ * 생성된 캐릭터 정보를 클립보드에 복사합니다.
+ * 성공 또는 실패 시 사용자에게 피드백을 제공합니다.
  */
 copyInfoButton.addEventListener('click', async () => {
     const textToCopy = characterInfoOutput.textContent;
-    // Use modern Clipboard API if available
+    // 최신 Clipboard API가 사용 가능한 경우 사용합니다.
     if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
             await navigator.clipboard.writeText(textToCopy);
@@ -543,11 +543,11 @@ copyInfoButton.addEventListener('click', async () => {
             setTimeout(() => { copyInfoButton.textContent = originalText; }, 1500);
             displaySuccessMessage("정보가 클립보드에 복사되었습니다!");
         } catch (err) {
-            console.error('Clipboard copy failed:', err);
+            console.error('클립보드 복사 실패:', err);
             await showMessageModal('클립보드 복사에 실패했습니다. 수동으로 복사해주세요.');
         }
     } else {
-        // Fallback for older browsers
+        // 구형 브라우저를 위한 대체 방법입니다.
         const tempTextArea = document.createElement('textarea');
         tempTextArea.value = textToCopy;
         document.body.appendChild(tempTextArea);
@@ -559,7 +559,7 @@ copyInfoButton.addEventListener('click', async () => {
             setTimeout(() => { copyInfoButton.textContent = originalText; }, 1500);
             displaySuccessMessage("정보가 클립보드에 복사되었습니다!");
         } catch (err) {
-            console.error('Clipboard copy fallback failed:', err);
+            console.error('클립보드 복사 대체 실패:', err);
             await showMessageModal('클립보드 복사에 실패했습니다. 수동으로 복사해주세요.');
         } finally {
             document.body.removeChild(tempTextArea);
@@ -568,7 +568,7 @@ copyInfoButton.addEventListener('click', async () => {
 });
 
 /**
- * Clears the content of the prompt textarea.
+ * 프롬프트 텍스트 영역의 내용을 지웁니다.
  */
 clearPromptButton.addEventListener('click', () => {
     promptInput.value = '';
@@ -579,10 +579,10 @@ clearPromptButton.addEventListener('click', () => {
 });
 
 /**
- * Handles card selection logic for models and aspect ratios.
- * @param {HTMLElement} container The container holding the selectable cards.
- * @param {HTMLElement} selectedCard The card element that was clicked.
- * @returns {string} The data value (model or ratio) of the selected card.
+ * 모델 및 이미지 비율에 대한 카드 선택 로직을 처리합니다.
+ * @param {HTMLElement} container - 선택 가능한 카드를 포함하는 컨테이너입니다.
+ * @param {HTMLElement} selectedCard - 클릭된 카드 요소입니다.
+ * @returns {string} 선택된 카드의 데이터 값(모델 또는 비율)입니다.
  */
 function handleCardSelection(container, selectedCard) {
     container.querySelectorAll('.card-item').forEach(card => {
@@ -593,7 +593,7 @@ function handleCardSelection(container, selectedCard) {
 }
 
 /**
- * Updates the aspect ratio selector's UI based on the selected model's capabilities.
+ * 선택된 모델의 기능에 따라 이미지 비율 선택기의 UI를 업데이트합니다.
  */
 function updateAspectRatioUI() {
     const modelsWithoutAspectRatio = ["gemini-2.0-flash-preview-image-generation"];
@@ -603,7 +603,7 @@ function updateAspectRatioUI() {
     aspectRatioNotice.classList.toggle('hidden', !isDisabled);
 }
 
-// --- Modal-related Event Listeners ---
+// --- 모달 관련 이벤트 리스너 ---
 messageModalOkButton.addEventListener('click', () => {
     messageModal.style.display = 'none';
     if (resolveMessageModalPromise) {
@@ -646,7 +646,7 @@ window.addEventListener('click', (event) => {
     }
 });
 
-// --- UI Interaction Event Listeners ---
+// --- UI 상호작용 이벤트 리스너 ---
 modelSelector.addEventListener('click', (event) => {
     const selectedCard = event.target.closest('.model-card');
     if (selectedCard) {
@@ -673,7 +673,7 @@ promptTemplateContainer.addEventListener('click', (event) => {
     }
 });
 
-// --- Core Application Event Listeners ---
+// --- 핵심 애플리케이션 이벤트 리스너 ---
 generateImageButton.addEventListener('click', generateImage);
 generateInfoButton.addEventListener('click', generateCharacterInfo);
 promptInput.addEventListener('input', countPromptTokens);
@@ -685,10 +685,10 @@ apiKeyToggleVisibilityButton.addEventListener('click', toggleApiKeyVisibility);
 
 
 // =================================================================
-// Initialization
+// 초기화
 // =================================================================
 
-// --- Prompt Templates ---
+// --- 프롬프트 템플릿 ---
 const promptTemplates = {
     fantasy: `Subject: A wise elf mage with glowing eyes\nContext & Background: In an ancient, enchanted forest at dusk\nStyle: Detailed digital painting, fantasy art, cinematic lighting\nDetailed Description & Quality: Wearing intricate silver robes, holding a crystal staff, high-quality, detailed, 4K`,
     'sci-fi': `Subject: A sleek cyborg assassin\nContext & Background: On a neon-lit rooftop in a futuristic cyberpunk city\nStyle: Sci-fi concept art, realistic, Blade Runner aesthetic\nDetailed Description & Quality: Chrome exoskeleton, glowing red optic sensors, holding a plasma rifle, HDR, cinematic, detailed textures`,
@@ -697,22 +697,22 @@ const promptTemplates = {
 };
 
 /**
- * Initializes the application when the window loads.
- * Sets up the UI, default values, and initial state.
+ * 창이 로드될 때 애플리케이션을 초기화합니다.
+ * UI, 기본값 및 초기 상태를 설정합니다.
  */
 window.onload = () => {
     updateApiKeyUI();
     
-    // Populate the prompt with the default fantasy template.
+    // 기본 판타지 템플릿으로 프롬프트를 채웁니다.
     promptInput.value = promptTemplates.fantasy; 
 
-    // Set the default selected cards for model and aspect ratio.
+    // 모델 및 이미지 비율에 대한 기본 선택 카드를 설정합니다.
     const defaultModelCard = modelSelector.querySelector(`[data-model="${selectedModel}"]`);
     const defaultRatioCard = aspectRatioSelector.querySelector(`[data-ratio="${selectedAspectRatio}"]`);
     if (defaultModelCard) defaultModelCard.classList.add('selected');
     if (defaultRatioCard) defaultRatioCard.classList.add('selected');
 
-    // Initialize UI states.
+    // UI 상태를 초기화합니다.
     updateAspectRatioUI();
     countPromptTokens();
 };

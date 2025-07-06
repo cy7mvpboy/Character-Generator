@@ -680,3 +680,20 @@ button:disabled {
     transform: translateY(0);
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
+
+/* 프롬프트 초기화 버튼 스타일 */
+#clearPromptButton {
+    background-color: #dc3545;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    margin: 5px;
+}
+
+#clearPromptButton:hover {
+    background-color: #c82333;
+}
