@@ -176,7 +176,7 @@ function displaySuccessMessage(message) {
  * @returns {Promise<string>} 이미지 설명 텍스트로 리졸브되는 프로미스입니다.
  */
 async function describeImageWithGemini(base64ImageData, apiKey, promptText) {
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     const payload = {
         contents: [{
             role: "user",
@@ -509,7 +509,13 @@ imageUpload.addEventListener('change', async (event) => {
         imagePreview.style.display = 'block';
 
         try {
-            const imageDescriptionPrompt = `Based on the uploaded image, generate a detailed character description following these sections. Focus on visual elements. Do not include any introductory or concluding remarks, just the structured description.\n\nSubject: [Describe the main subject of the character, e.g., 'A cute animal mascot', 'A stylized human character']\nContext & Background: [Describe the environment or context the character is in, e.g., 'Against a plain studio background', 'In a simple, abstract setting']\nStyle: [Describe the art style, e.g., 'Flat design with bold outlines', 'Vector illustration with clean lines', 'Minimalist graphic design']\nDetailed Description & Quality: [Provide detailed visual attributes, including appearance (shape, color palette, features, expression), unique traits, props, symbolic elements, and desired image quality (e.g., 'high-quality', 'crisp', 'clean', 'professional branding design').]`;
+            const imageDescriptionPrompt = `Analyze the provided image and generate a detailed, structured prompt that could be used to recreate a similar image. Deconstruct the image into the following components. Do not include any introductory or concluding remarks, just the structured analysis.
+
+1.  Subject: Describe the main character or focal point, including their appearance, clothing, and expression.
+2.  Setting: Describe the background and environment.
+3.  Style: Identify the artistic style (e.g., photorealistic, anime, watercolor, 3D render).
+4.  Composition & Lighting: Describe the camera angle, shot type (e.g., close-up, wide shot), and lighting (e.g., cinematic, soft, neon).
+5.  Keywords: Provide a list of comma-separated keywords that summarize the key elements for an image generation model.`;
             const imageDescription = await describeImageWithGemini(base64ImageData, apiKey, imageDescriptionPrompt);
             await showPromptUpdateChoiceModal(imageDescription.trim());
             displaySuccessMessage("이미지 분석 완료!");
@@ -690,10 +696,34 @@ apiKeyToggleVisibilityButton.addEventListener('click', toggleApiKeyVisibility);
 
 // --- 프롬프트 템플릿 ---
 const promptTemplates = {
-    fantasy: `Subject: A wise elf mage with glowing eyes\nContext & Background: In an ancient, enchanted forest at dusk\nStyle: Detailed digital painting, fantasy art, cinematic lighting\nDetailed Description & Quality: Wearing intricate silver robes, holding a crystal staff, high-quality, detailed, 4K`,
-    'sci-fi': `Subject: A sleek cyborg assassin\nContext & Background: On a neon-lit rooftop in a futuristic cyberpunk city\nStyle: Sci-fi concept art, realistic, Blade Runner aesthetic\nDetailed Description & Quality: Chrome exoskeleton, glowing red optic sensors, holding a plasma rifle, HDR, cinematic, detailed textures`,
-    mascot: `Subject: A friendly, cute bear mascot for a honey brand\nContext & Background: Simple, clean studio background, vibrant colors\nStyle: 3D render, cartoon style, soft lighting\nDetailed Description & Quality: Round and fluffy body, big welcoming eyes, holding a honey pot, brandable, high-quality, family-friendly`,
-    pixel: `Subject: A heroic knight in full armor\nContext & Background: Standing in front of a pixelated castle\nStyle: 16-bit pixel art, retro video game style, Aseprite\nDetailed Description & Quality: Shiny plate armor, holding a large sword and shield, vibrant color palette, crisp pixels, SNES style`
+    fantasy: `Subject: A stoic warrior monk
+Appearance: Shaved head with intricate tattoos, piercing blue eyes, weathered face
+Attire: Wearing simple orange and saffron robes, leather sandals
+Pose/Action: Pose or action, Meditating cross-legged, floating slightly above the ground
+Setting: In a serene mountain temple, cherry blossoms are falling
+Style: Realistic digital painting, dramatic lighting
+Quality: ultra detailed, sharp focus, high quality`,
+    'sci-fi': `Subject: A renegade cyborg hacker
+Appearance: Glowing optic data-jacks on temple, synthetic skin, neon-lit hair
+Attire: Wears a worn-out trench coat over a tech-infused jumpsuit
+Pose/Action: Pose or action, Typing furiously on a holographic keyboard
+Setting: In a cluttered, high-tech hideout filled with screens and wires
+Style: Cyberpunk concept art, gritty, neon lighting
+Quality: intricate details, cinematic, HDR`,
+    mascot: `Subject: A friendly coffee bean mascot
+Appearance: Big expressive eyes, a cheerful smile, small arms and legs
+Attire: Wearing a small apron with a coffee cup logo
+Pose/Action: Pose or action, Holding a steaming cup of coffee, giving a welcoming wave
+Setting: Simple, clean background with a soft, warm color palette
+Style: 3D render, cartoon style, branding design
+Quality: high quality, family-friendly, brandable`,
+    pixel: `Subject: A mysterious rogue in a hood
+Appearance: Only glowing eyes are visible under the dark hood
+Attire: A dark cloak, leather gear, holding a pair of daggers
+Pose/Action: Pose or action, Crouching on a rooftop, ready to leap
+Setting: On a rainy, pixelated city rooftop at night
+Style: 16-bit pixel art, retro game style, Aseprite
+Quality: crisp pixels, limited color palette`
 };
 
 /**
