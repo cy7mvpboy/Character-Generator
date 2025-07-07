@@ -22,17 +22,6 @@
             </div>
         </div>
 
-        <div class="file-input-wrapper">
-            <label for="imageUpload">
-                이미지 업로드 및 특징 추가
-            </label>
-            <input type="file" id="imageUpload" accept="image/*">
-            <div id="imagePreview" class="image-preview">
-                <img src="" alt="업로드된 이미지 미리보기">
-            </div>
-            <p id="descriptionLoading" class="description-loading hidden">이미지 특징 분석 중...</p>
-        </div>
-
         <div class="guidelines-section">
             <h2>✍️ 캐릭터 생성 가이드라인</h2>
             <p>효과적인 캐릭터 이미지를 생성하려면 명확하고 구체적인 프롬프트 작성이 중요합니다. 다음 가이드라인을 참고하여 최고의 결과물을 만들어보세요.</p>
@@ -40,11 +29,11 @@
             <h3>1. 기본 원칙</h3>
             <ul>
                 <li><strong>명확하고 구체적으로 작성하세요.</strong><br>
-                    <span class="text-red-500">나쁜 예:</span> `사람`<br>
-                    <span class="text-green-500">좋은 예:</span> `긴 빨간 머리를 가진 젊은 여성, 가죽 재킷을 입고 번화한 도시 거리에서 자신감 있게 서 있는 모습`
+                    <span class="text-red-500">나쁜 예:</span> 사람<br>
+                    <span class="text-green-500">좋은 예:</span> 긴 빨간 머리를 가진 젊은 여성, 가죽 재킷을 입고 번화한 도시 거리에서 자신감 있게 서 있는 모습
                 </li>
                 <li><strong>상세한 묘사를 사용하세요.</strong><br>
-                    `고요한`, `사려 깊은 표정`, `신비로운` 등 형용사와 부사를 활용하여 분위기와 스타일을 전달하세요.
+                    고요한, 사려 깊은 표정, 신비로운 등 형용사와 부사를 활용하여 분위기와 스타일을 전달하세요.
                 </li>
                 <li><strong>반복적으로 개선하세요.</strong><br>
                     초기 결과물을 보고 점진적으로 프롬프트를 수정하고 개선해나가세요.
@@ -54,25 +43,36 @@
             <h3>2. 프롬프트 구조화</h3>
             <p>효과적인 프롬프트는 다음과 같은 핵심 요소로 구성됩니다.</p>
             <ul>
-                <li><strong>주제 (Subject):</strong> `젊은 여성의 초상화`, `근육질의 전사`</li>
-                <li><strong>배경 (Setting):</strong> `어두운 고대 성 홀`, `번화한 도시 거리`</li>
-                <li><strong>스타일 (Style):</strong> `3D 이미지`, `일러스트레이션`, `사실주의`, `애니메이션`</li>
-                <li><strong>분위기/표정 (Mood/Expression):</strong> `고요한`, `사려 깊은 표정`, `활기찬`</li>
-                <li><strong>행동/포즈 (Action/Pose):</strong> `우아하게 서 있는`, `책을 들고 있는`</li>
-                <li><strong>구도/조명 (Composition/Lighting):</strong> `클로즈업`, `와이드 샷`, `부드러운 빛`, `4k 해상도`</li>
+                <li><strong>주제 (Subject):</strong> 젊은 여성의 초상화, 근육질의 전사</li>
+                <li><strong>배경 (Setting):</strong> 어두운 고대 성 홀, 번화한 도시 거리</li>
+                <li><strong>스타일 (Style):</strong> 3D 이미지, 일러스트레이션, 사실주의, 애니메이션</li>
+                <li><strong>분위기/표정 (Mood/Expression):</strong> 고요한, 사려 깊은 표정, 활기찬</li>
+                <li><strong>행동/포즈 (Action/Pose):</strong> 우아하게 서 있는, 책을 들고 있는</li>
+                <li><strong>구도/조명 (Composition/Lighting):</strong> 클로즈업, 와이드 샷, 부드러운 빛, 4k 해상도</li>
             </ul>
 
             <h3>3. 고급 기법</h3>
             <ul>
                 <li><strong>부정 프롬프트 (Negative Prompts):</strong><br>
-                    원하지 않는 요소를 제외하여 이미지 품질을 높일 수 있습니다. (예: `blurry, bad anatomy`)
+                    원하지 않는 요소를 제외하여 이미지 품질을 높일 수 있습니다. (예: blurry, bad anatomy)
                 </li>
                 <li><strong>참조 활용:</strong><br>
-                    특정 아티스트(`반 고흐 스타일`), 카메라 앵글(`클로즈업`), 조명(`극적인 조명`) 등을 명시하여 원하는 결과물에 더 가깝게 만들 수 있습니다.
+                    특정 아티스트(반 고흐 스타일), 카메라 앵글(클로즈업), 조명(극적인 조명) 등을 명시하여 원하는 결과물에 더 가깝게 만들 수 있습니다.
                 </li>
             </ul>
             
             <p class="text-gray-400 mt-2" style="font-size: 0.95em;">영어로 입력할 때 더 좋은 결과가 나옵니다.</p>
+        </div>
+
+        <div class="file-input-wrapper">
+            <label for="imageUpload">
+                이미지 업로드 및 특징 추가
+            </label>
+            <input type="file" id="imageUpload" accept="image/*">
+            <div id="imagePreview" class="image-preview">
+                <img src="" alt="업로드된 이미지 미리보기">
+            </div>
+            <p id="descriptionLoading" class="description-loading hidden">이미지 특징 분석 중...</p>
         </div>
 
         <div id="promptTemplateContainer" class="prompt-template-container">
@@ -98,6 +98,11 @@
             <div class="model-select-wrapper">
                 <label>이미지 생성 모델 선택:</label>
                 <div id="modelSelector" class="card-selector-container">
+                    <div class="model-card card-item" data-model="gemini-2.0-flash-preview-image-generation">
+                        <span class="card-title">Gemini 2.0</span>
+                        <span class="card-tag fast">빠른 속도</span>
+                        <span class="card-description">신속한 아이디어 구상에 적합</span>
+                    </div>
                     <div class="model-card card-item" data-model="imagen-3.0-generate-002">
                         <span class="card-title">Imagen 3.0</span>
                         <span class="card-tag recommended">추천</span>
@@ -107,11 +112,6 @@
                         <span class="card-title">Imagen 4.0</span>
                         <span class="card-tag preview">최고 품질</span>
                         <span class="card-description">가장 뛰어난 결과 (미리보기)</span>
-                    </div>
-                    <div class="model-card card-item" data-model="gemini-2.0-flash-preview-image-generation">
-                        <span class="card-title">Gemini 2.0</span>
-                        <span class="card-tag fast">빠른 속도</span>
-                        <span class="card-description">신속한 아이디어 구상에 적합</span>
                     </div>
                 </div>
             </div>
@@ -210,7 +210,6 @@
         </div>
     </div>
 
-    <script src="env-loader.js"></script>
     <script src="script.js" type="module"></script>
 </body>
 </html>

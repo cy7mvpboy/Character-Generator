@@ -163,10 +163,85 @@ function displaySuccessMessage(message) {
     }, 2000);
 }
 
+/**
+ * 애플리케이션의 로딩 상태를 설정하거나 해제합니다.
+ * @param {boolean} isLoading - 로딩 상태 여부.
+ * @param {string} [message=''] - 로딩 중에 표시할 메시지.
+ */
+function setLoadingState(isLoading, message = '') {
+    generateImageButton.disabled = isLoading;
+    generateInfoButton.disabled = isLoading;
+    clearPromptButton.disabled = isLoading;
+
+    if (isLoading) {
+        promptInput.removeEventListener('input', countPromptTokens);
+        loadingContainer.classList.remove('hidden');
+        loadingSpinner.classList.remove('hidden');
+        loadingMessage.textContent = message;
+        errorMessage.classList.add('hidden');
+        successMessage.classList.add('hidden');
+        tokenCountDisplay.classList.add('hidden');
+    } else {
+        promptInput.addEventListener('input', countPromptTokens);
+        loadingContainer.classList.add('hidden');
+        loadingMessage.textContent = '';
+        countPromptTokens(); // 상태 복원 후 토큰 수 다시 계산
+    }
+}
+
 
 // =================================================================
 // API 통신 함수
 // =================================================================
+
+/**
+ * API 호출을 수행하고 UI 상태를 관리하는 범용 함수입니다.
+ * @param {object} options - API 호출 옵션.
+ * @param {string} options.apiUrl - 요청을 보낼 API URL입니다.
+ * @param {object} options.payload - API 요청에 대한 페이로드입니다.
+ * @param {string} options.loadingMessage - 로딩 중에 표시할 메시지입니다.
+ * @param {function(object): void} options.onSuccess - API 호출 성공 시 실행할 콜백 함수입니다.
+ * @param {function(): boolean} [options.preCheck] - API 호출 전 실행할 추가 검사 함수입니다.
+ */
+async function performApiCall({ apiUrl, payload, loadingMessage, onSuccess, preCheck }) {
+    const apiKey = apiKeyInput.value.trim();
+    if (!apiKey) {
+        displayErrorMessage("API 키를 먼저 입력해주세요.");
+        return;
+    }
+
+    if (preCheck && !preCheck()) {
+        return;
+    }
+
+    setLoadingState(true, loadingMessage);
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            // Gemini API의 표준 오류 형식에서 메시지를 추출합니다.
+            const errorDetails = result.error?.message || JSON.stringify(result);
+            throw new Error(errorDetails);
+        }
+
+        onSuccess(result);
+
+    } catch (error) {
+        // 모든 오류(네트워크, 파싱, API)를 잡아 사용자에게 표시합니다.
+        displayErrorMessage(`오류 발생: ${error.message}`);
+        console.error(`${loadingMessage} 중 오류:`, error);
+    } finally {
+        setLoadingState(false);
+    }
+}
+
 
 /**
  * Gemini Vision API를 사용하여 이미지를 설명합니다.
@@ -191,217 +266,166 @@ async function describeImageWithGemini(base64ImageData, apiKey, promptText) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     });
+
     const result = await response.json();
+
+    if (!response.ok) {
+        const errorDetails = result.error?.message || JSON.stringify(result);
+        throw new Error(errorDetails);
+    }
+
     if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
         return result.candidates[0].content.parts[0].text;
-    } else {
-        throw new Error("Gemini Vision API로부터 잘못된 응답 구조를 받았습니다.");
     }
+
+    const feedback = result.promptFeedback || result.candidates?.[0]?.finishReason === 'SAFETY';
+    if (feedback) {
+        const reason = result.promptFeedback?.blockReason || 'SAFETY';
+        throw new Error(`이미지 분석이 정책(${reason})에 따라 차단되었습니다.`);
+    }
+
+    throw new Error("Gemini Vision API로부터 잘못된 응답 구조를 받았습니다.");
 }
 
 /**
  * 선택된 Gemini 이미지 생성 모델을 사용하여 이미지를 생성합니다.
  */
 async function generateImage() {
-    const apiKey = apiKeyInput.value.trim();
     const userPrompt = promptInput.value.trim();
+    const apiKey = apiKeyInput.value.trim();
 
-    if (!apiKey) {
-        displayErrorMessage("API 키를 먼저 입력해주세요.");
-        return;
-    }
-    if (!userPrompt) {
-        displayErrorMessage("캐릭터 설명을 입력해주세요.");
-        return;
+    const preCheck = () => {
+        if (!userPrompt) {
+            displayErrorMessage("캐릭터 설명을 입력해주세요.");
+            return false;
+        }
+        return true;
+    };
+
+    let payload;
+    let apiUrl;
+
+    // 선택된 모델에 따라 API 엔드포인트와 페이로드를 구성합니다.
+    if (selectedModel === "gemini-2.0-flash-preview-image-generation") {
+        apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
+        payload = {
+            contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+            generationConfig: { responseModalities: ["TEXT", "IMAGE"] }
+        };
+    } else {
+        apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:predict?key=${apiKey}`;
+        payload = {
+            instances: [{ prompt: userPrompt }],
+            parameters: { "sampleCount": 1, "aspectRatio": selectedAspectRatio }
+        };
     }
 
-    // --- UI 상태: 로딩 시작 ---
-    generateImageButton.disabled = true;
-    generateInfoButton.disabled = true;
-    clearPromptButton.disabled = true;
-    promptInput.removeEventListener('input', countPromptTokens);
-    loadingContainer.classList.remove('hidden');
-    loadingSpinner.classList.remove('hidden');
-    loadingMessage.textContent = '이미지 생성 중...';
     characterImageContainer.innerHTML = '';
-    errorMessage.classList.add('hidden');
-    successMessage.classList.add('hidden');
-    tokenCountDisplay.classList.add('hidden');
 
-    try {
-        let payload;
-        let apiUrl;
-
-        // 선택된 모델에 따라 API 엔드포인트와 페이로드를 구성합니다.
-        if (selectedModel === "gemini-2.0-flash-preview-image-generation") {
-            apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
-            payload = {
-                contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-                generationConfig: { responseModalities: ["TEXT", "IMAGE"] }
-            };
-        } else {
-            apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:predict?key=${apiKey}`;
-            payload = {
-                instances: { prompt: userPrompt },
-                parameters: { "sampleCount": 1, "aspectRatio": selectedAspectRatio }
-            };
-        }
-
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            let errorDetails = `HTTP 오류! 상태: ${response.status}`;
-            try {
-                const errorResult = await response.json();
-                errorDetails = errorResult.error?.message || JSON.stringify(errorResult);
-            } catch (e) { /* 응답이 JSON이 아닌 경우 무시 */ }
-            throw new Error(errorDetails);
-        }
-
-        const result = await response.json();
-        let imageUrl = '';
-
-        // 모델에 따라 응답에서 이미지 데이터를 추출합니다.
-        if (selectedModel === "gemini-2.0-flash-preview-image-generation") {
-            const imagePart = result.candidates?.[0]?.content?.parts.find(part => part.inlineData);
-            if (imagePart?.inlineData?.data) {
-                imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
-            }
-        } else {
-            if (result.predictions?.[0]?.bytesBase64Encoded) {
-                imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-            }
-        }
-
-        if (imageUrl) {
-            // --- 생성된 이미지 및 다운로드 버튼 표시 ---
-            const imgElement = document.createElement('img');
-            imgElement.src = imageUrl;
-            imgElement.alt = "생성된 캐릭터 이미지";
-            characterImageContainer.appendChild(imgElement);
-
-            const downloadButton = document.createElement('button');
-            downloadButton.textContent = '이미지 다운로드';
-            downloadButton.classList.add('action-button', 'mt-4');
-            downloadButton.onclick = () => {
-                const a = document.createElement('a');
-                a.href = imageUrl;
-                a.download = 'generated_character.png';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            };
-            characterImageContainer.appendChild(downloadButton);
-            displaySuccessMessage("이미지 생성 완료!");
-            countPromptTokens();
-        } else {
-            const feedback = result.promptFeedback || (result.predictions && result.predictions[0]?.promptFeedback);
-            if (feedback?.blockReason) {
-                 displayErrorMessage(`프롬프트가 정책(${feedback.blockReason})에 위배되어 이미지를 생성할 수 없습니다.`);
+    await performApiCall({
+        apiUrl,
+        payload,
+        loadingMessage: '이미지 생성 중...',
+        preCheck,
+        onSuccess: (result) => {
+            let imageUrl = '';
+            // 모델에 따라 응답에서 이미지 데이터를 추출합니다.
+            if (selectedModel === "gemini-2.0-flash-preview-image-generation") {
+                const imagePart = result.candidates?.[0]?.content?.parts.find(part => part.inlineData);
+                if (imagePart?.inlineData?.data) {
+                    imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+                }
             } else {
-                displayErrorMessage("이미지 생성 결과가 예상과 다릅니다. API 응답을 확인해 주세요.");
+                if (result.predictions?.[0]?.bytesBase64Encoded) {
+                    imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                }
             }
-            console.error("예상치 못한 이미지 생성 응답:", result);
+
+            if (imageUrl) {
+                // --- 생성된 이미지 및 다운로드 버튼 표시 ---
+                const imgElement = document.createElement('img');
+                imgElement.src = imageUrl;
+                imgElement.alt = "생성된 캐릭터 이미지";
+                characterImageContainer.appendChild(imgElement);
+
+                const downloadButton = document.createElement('button');
+                downloadButton.textContent = '이미지 다운로드';
+                downloadButton.classList.add('action-button', 'mt-4');
+                downloadButton.onclick = () => {
+                    const a = document.createElement('a');
+                    a.href = imageUrl;
+                    a.download = 'generated_character.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                };
+                characterImageContainer.appendChild(downloadButton);
+                displaySuccessMessage("이미지 생성 완료!");
+            } else {
+                const feedback = result.promptFeedback || (result.predictions && result.predictions[0]?.promptFeedback) || (result.candidates && result.candidates[0]?.finishReason === 'SAFETY' && { blockReason: 'SAFETY' });
+                if (feedback?.blockReason) {
+                     displayErrorMessage(`프롬프트가 정책(${feedback.blockReason})에 위배되어 이미지를 생성할 수 없습니다.`);
+                } else {
+                    displayErrorMessage("이미지 생성 결과가 예상과 다릅니다. API 응답을 확인해 주세요.");
+                }
+                console.error("예상치 못한 이미지 생성 응답:", result);
+            }
         }
-    } catch (error) {
-        displayErrorMessage(`이미지 생성 중 오류 발생: ${error.message}`);
-        console.error("이미지 생성 오류:", error);
-    } finally {
-        // --- UI 상태: 로딩 종료 ---
-        generateImageButton.disabled = false;
-        generateInfoButton.disabled = false;
-        clearPromptButton.disabled = false;
-        promptInput.addEventListener('input', countPromptTokens);
-        loadingContainer.classList.add('hidden');
-        loadingMessage.textContent = '';
-    }
+    });
 }
 
 /**
  * Gemini LLM을 사용하여 캐릭터 정보(소개, 특징)를 생성합니다.
  */
 async function generateCharacterInfo() {
-    const apiKey = apiKeyInput.value.trim();
     const userPrompt = promptInput.value.trim();
+    const apiKey = apiKeyInput.value.trim();
 
-    if (!apiKey) {
-        displayErrorMessage("API 키를 먼저 입력해주세요.");
-        return;
-    }
-    if (!userPrompt) {
-        displayErrorMessage("캐릭터 설명을 입력해주세요.");
-        return;
-    }
+    const preCheck = () => {
+        if (!userPrompt) {
+            displayErrorMessage("캐릭터 설명을 입력해주세요.");
+            return false;
+        }
+        return true;
+    };
 
-    // --- UI 상태: 로딩 시작 ---
-    generateImageButton.disabled = true;
-    generateInfoButton.disabled = true;
-    clearPromptButton.disabled = true;
-    promptInput.removeEventListener('input', countPromptTokens);
-    characterInfoLoading.classList.remove('hidden');
-    characterInfoLoading.textContent = '캐릭터 정보 생성 중...';
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const systemPrompt = `Based on the following character description, generate a short biography, including their personality traits, a brief backstory, and a unique characteristic. Do not use any Markdown syntax. Format the response with clear headings (e.g., 'Personality:', 'Background:', 'Unique Trait:') and use simple line breaks. Do not include any introductory or concluding remarks.\n\nCharacter Description:\n${userPrompt}`;
+    const payload = { contents: [{ role: "user", parts: [{ text: systemPrompt }] }] };
+
+    // --- UI 상태: 정보 섹션 로딩 시작 ---
     characterInfoOutput.innerHTML = '';
     characterInfoSection.classList.remove('hidden');
-    errorMessage.classList.add('hidden');
     copyInfoButton.classList.add('hidden');
-    successMessage.classList.add('hidden');
-    tokenCountDisplay.classList.add('hidden');
+    characterInfoLoading.classList.remove('hidden');
+    characterInfoLoading.textContent = '캐릭터 정보 생성 중...';
 
-    try {
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-        const systemPrompt = `Based on the following character description, generate a short biography, including their personality traits, a brief backstory, and a unique characteristic. Do not use any Markdown syntax. Format the response with clear headings (e.g., 'Personality:', 'Background:', 'Unique Trait:') and use simple line breaks. Do not include any introductory or concluding remarks.\n\nCharacter Description:\n${userPrompt}`;
-        const payload = { contents: [{ role: "user", parts: [{ text: systemPrompt }] }] };
-
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            let errorData = { message: `HTTP 오류! 상태: ${response.status}` };
-            try {
-                const errorJson = await response.json();
-                errorData.message = errorJson.error?.message || JSON.stringify(errorJson);
-            } catch (e) {
-                errorData.message = await response.text();
-            }
-            throw new Error(errorData.message);
-        }
-
-        const result = await response.json();
-
-        if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
-            const text = result.candidates[0].content.parts[0].text;
-            characterInfoOutput.innerHTML = `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>`;
-            copyInfoButton.classList.remove('hidden');
-            displaySuccessMessage("캐릭터 정보 생성 완료!");
-            countPromptTokens();
-        } else {
-            const feedback = result.promptFeedback;
-            if (feedback?.blockReason) {
-                displayErrorMessage(`콘텐츠 생성 실패: ${feedback.blockReason}. 프롬프트를 수정해 주세요.`);
+    await performApiCall({
+        apiUrl,
+        payload,
+        loadingMessage: '캐릭터 정보 생성 중...',
+        preCheck,
+        onSuccess: (result) => {
+            if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                const text = result.candidates[0].content.parts[0].text;
+                characterInfoOutput.innerHTML = `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>`;
+                copyInfoButton.classList.remove('hidden');
+                displaySuccessMessage("캐릭터 정보 생성 완료!");
             } else {
-                displayErrorMessage("캐릭터 정보 생성 결과가 예상과 다릅니다. API 응답을 확인해 주세요.");
+                const feedback = result.promptFeedback || (result.candidates && result.candidates[0]?.finishReason === 'SAFETY' && { blockReason: 'SAFETY' });
+                if (feedback?.blockReason) {
+                    displayErrorMessage(`콘텐츠 생성 실패: ${feedback.blockReason}. 프롬프트를 수정해 주세요.`);
+                } else {
+                    displayErrorMessage("캐릭터 정보 생성 결과가 예상과 다릅니다. API 응답을 확인해 주세요.");
+                }
+                console.error("예상치 못한 캐릭터 정보 응답:", result);
             }
-            console.error("예상치 못한 캐릭터 정보 응답:", result);
         }
-    } catch (error) {
-        displayErrorMessage(`오류 발생: ${error.message}`);
-        console.error("캐릭터 정보 생성 오류:", error);
-    } finally {
-        // --- UI 상태: 로딩 종료 ---
-        generateImageButton.disabled = false;
-        generateInfoButton.disabled = false;
-        clearPromptButton.disabled = false;
-        promptInput.addEventListener('input', countPromptTokens);
-        characterInfoLoading.classList.add('hidden');
-        characterInfoLoading.textContent = '';
-    }
+    });
+
+    // --- UI 상태: 정보 섹션 로딩 종료 ---
+    characterInfoLoading.classList.add('hidden');
+    characterInfoLoading.textContent = '';
 }
 
 /**
@@ -444,18 +468,21 @@ async function countPromptTokens() {
             });
             const result = await response.json();
 
+            if (!response.ok) {
+                const errorDetails = result.error?.message || JSON.stringify(result);
+                throw new Error(errorDetails);
+            }
+
             if (result && typeof result.totalTokens === 'number') {
                 tokenCountDisplay.textContent = `현재 프롬프트 토큰 수: ${result.totalTokens}개`;
                 tokenCountDisplay.style.color = '#333';
             } else {
-                tokenCountDisplay.textContent = '토큰 수 계산 실패';
-                tokenCountDisplay.style.color = '#dc3545';
-                console.error("예상치 못한 토큰 수 응답:", result);
+                throw new Error("API 응답에서 토큰 수를 찾을 수 없습니다.");
             }
         } catch (error) {
             tokenCountDisplay.textContent = '토큰 수 계산 오류';
             tokenCountDisplay.style.color = '#dc3545';
-            console.error("토큰 수 계산 오류:", error);
+            console.error("토큰 수 계산 오류:", error.message);
         }
     }, 500);
 }
@@ -493,14 +520,10 @@ imageUpload.addEventListener('change', async (event) => {
     }
 
     // --- UI 상태: 로딩 시작 ---
-    errorMessage.classList.add('hidden');
-    successMessage.classList.add('hidden');
-    tokenCountDisplay.classList.add('hidden');
-    descriptionLoading.classList.remove('hidden');
+    setLoadingState(true, '이미지 특징 분석 중...');
+    descriptionLoading.classList.remove('hidden'); // 이 로딩은 별도로 관리
     descriptionLoading.textContent = '이미지 특징 분석 중...';
-    generateImageButton.disabled = true;
-    generateInfoButton.disabled = true;
-    clearPromptButton.disabled = true;
+
 
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -509,26 +532,17 @@ imageUpload.addEventListener('change', async (event) => {
         imagePreview.style.display = 'block';
 
         try {
-            const imageDescriptionPrompt = `Analyze the provided image and generate a detailed, structured prompt that could be used to recreate a similar image. Deconstruct the image into the following components. Do not include any introductory or concluding remarks, just the structured analysis.
-
-1.  Subject: Describe the main character or focal point, including their appearance, clothing, and expression.
-2.  Setting: Describe the background and environment.
-3.  Style: Identify the artistic style (e.g., photorealistic, anime, watercolor, 3D render).
-4.  Composition & Lighting: Describe the camera angle, shot type (e.g., close-up, wide shot), and lighting (e.g., cinematic, soft, neon).
-5.  Keywords: Provide a list of comma-separated keywords that summarize the key elements for an image generation model.`;
+            const imageDescriptionPrompt = `Analyze the provided image and generate a detailed, structured prompt that could be used to recreate a similar image. Deconstruct the image into the following components. Do not include any introductory or concluding remarks, just the structured analysis.\n\n1.  Subject: Describe the main character or focal point, including their appearance, clothing, and expression.\n2.  Setting: Describe the background and environment.\n3.  Style: Identify the artistic style (e.g., photorealistic, anime, watercolor, 3D render).\n4.  Composition & Lighting: Describe the camera angle, shot type (e.g., close-up, wide shot), and lighting (e.g., cinematic, soft, neon).\n5.  Keywords: Provide a list of comma-separated keywords that summarize the key elements for an image generation model.`;
             const imageDescription = await describeImageWithGemini(base64ImageData, apiKey, imageDescriptionPrompt);
             await showPromptUpdateChoiceModal(imageDescription.trim());
             displaySuccessMessage("이미지 분석 완료!");
         } catch (error) {
-            displayErrorMessage("이미지 분석 중 오류가 발생했습니다. API 키가 올바른지 확인하거나 잠시 후 다시 시도해 주세요.");
+            displayErrorMessage(`이미지 분석 중 오류 발생: ${error.message}`);
             console.error("이미지 분석 오류:", error);
         } finally {
             // --- UI 상태: 로딩 종료 ---
+            setLoadingState(false);
             descriptionLoading.classList.add('hidden');
-            generateImageButton.disabled = false;
-            generateInfoButton.disabled = false;
-            clearPromptButton.disabled = false;
-            countPromptTokens();
         }
     };
     reader.readAsDataURL(file);
@@ -624,6 +638,7 @@ choiceOverwriteButton.addEventListener('click', () => {
         promptInput.value = currentImageDescription;
         resolvePromptUpdateChoicePromise('overwrite');
         resolvePromptUpdateChoicePromise = null;
+        countPromptTokens();
     }
 });
 
@@ -634,6 +649,7 @@ choiceAppendButton.addEventListener('click', () => {
         promptInput.value = currentPrompt ? `${currentPrompt}\n\n${currentImageDescription}` : currentImageDescription;
         resolvePromptUpdateChoicePromise('append');
         resolvePromptUpdateChoicePromise = null;
+        countPromptTokens();
     }
 });
 
@@ -696,34 +712,10 @@ apiKeyToggleVisibilityButton.addEventListener('click', toggleApiKeyVisibility);
 
 // --- 프롬프트 템플릿 ---
 const promptTemplates = {
-    fantasy: `Subject: A stoic warrior monk
-Appearance: Shaved head with intricate tattoos, piercing blue eyes, weathered face
-Attire: Wearing simple orange and saffron robes, leather sandals
-Pose/Action: Pose or action, Meditating cross-legged, floating slightly above the ground
-Setting: In a serene mountain temple, cherry blossoms are falling
-Style: Realistic digital painting, dramatic lighting
-Quality: ultra detailed, sharp focus, high quality`,
-    'sci-fi': `Subject: A renegade cyborg hacker
-Appearance: Glowing optic data-jacks on temple, synthetic skin, neon-lit hair
-Attire: Wears a worn-out trench coat over a tech-infused jumpsuit
-Pose/Action: Pose or action, Typing furiously on a holographic keyboard
-Setting: In a cluttered, high-tech hideout filled with screens and wires
-Style: Cyberpunk concept art, gritty, neon lighting
-Quality: intricate details, cinematic, HDR`,
-    mascot: `Subject: A friendly coffee bean mascot
-Appearance: Big expressive eyes, a cheerful smile, small arms and legs
-Attire: Wearing a small apron with a coffee cup logo
-Pose/Action: Pose or action, Holding a steaming cup of coffee, giving a welcoming wave
-Setting: Simple, clean background with a soft, warm color palette
-Style: 3D render, cartoon style, branding design
-Quality: high quality, family-friendly, brandable`,
-    pixel: `Subject: A mysterious rogue in a hood
-Appearance: Only glowing eyes are visible under the dark hood
-Attire: A dark cloak, leather gear, holding a pair of daggers
-Pose/Action: Pose or action, Crouching on a rooftop, ready to leap
-Setting: On a rainy, pixelated city rooftop at night
-Style: 16-bit pixel art, retro game style, Aseprite
-Quality: crisp pixels, limited color palette`
+    fantasy: `Subject: A stoic warrior monk\nAppearance: Shaved head with intricate tattoos, piercing blue eyes, weathered face\nAttire: Wearing simple orange and saffron robes, leather sandals\nPose/Action: Meditating cross-legged, floating slightly above the ground\nSetting: In a serene mountain temple, cherry blossoms are falling\nStyle: Realistic digital painting, dramatic lighting\nQuality: ultra detailed, sharp focus, high quality`,
+    'sci-fi': `Subject: A renegade cyborg hacker\nAppearance: Glowing optic data-jacks on temple, synthetic skin, neon-lit hair\nAttire: Wears a worn-out trench coat over a tech-infused jumpsuit\nPose/Action: Typing furiously on a holographic keyboard\nSetting: In a cluttered, high-tech hideout filled with screens and wires\nStyle: Cyberpunk concept art, gritty, neon lighting\nQuality: intricate details, cinematic, HDR`,
+    mascot: `Subject: A friendly coffee bean mascot\nAppearance: Big expressive eyes, a cheerful smile, small arms and legs\nAttire: Wearing a small apron with a coffee cup logo\nPose/Action: Holding a steaming cup of coffee, giving a welcoming wave\nSetting: Simple, clean background with a soft, warm color palette\nStyle: 3D render, cartoon style, branding design\nQuality: high quality, family-friendly, brandable`,
+    pixel: `Subject: A mysterious rogue in a hood\nAppearance: Only glowing eyes are visible under the dark hood\nAttire: A dark cloak, leather gear, holding a pair of daggers\nPose/Action: Crouching on a rooftop, ready to leap\nSetting: On a rainy, pixelated city rooftop at night\nStyle: 16-bit pixel art, retro game style, Aseprite\nQuality: crisp pixels, limited color palette`
 };
 
 /**
